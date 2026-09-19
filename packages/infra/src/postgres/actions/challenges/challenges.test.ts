@@ -1,6 +1,6 @@
 import { PgClient } from '@effect/sql-pg'
-import { type ChallengeId, makePagination } from '@kuma/domain'
-import { Effect, Layer } from 'effect'
+import { type ChallengeId, isDomainError, makePagination } from '@kuma/domain'
+import { Effect, Exit, Layer } from 'effect'
 import { describe, expect, it } from 'vitest'
 import { PostgresError } from '../../error'
 import { type CreateChallengeInput, create, del, fetch, list } from './index'
@@ -66,12 +66,16 @@ describe('Postgres Challenge Actions', () => {
       const program = create(samplePayload).pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        const failure = exit.cause
-        expect(JSON.stringify(failure)).toContain('DomainError')
-        expect(JSON.stringify(failure)).toContain('INTERNAL')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('DomainError')
+          expect(JSON.stringify(failure)).toContain('INTERNAL')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
   })
 
@@ -102,10 +106,15 @@ describe('Postgres Challenge Actions', () => {
       const program = fetch('ch_non_existent' as ChallengeId).pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        expect(JSON.stringify(exit.cause)).toContain('NOT_FOUND')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('NOT_FOUND')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
 
     it('maps SQL failure to DomainError.internal', async () => {
@@ -114,10 +123,15 @@ describe('Postgres Challenge Actions', () => {
       const program = fetch('ch_test_1' as ChallengeId).pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        expect(JSON.stringify(exit.cause)).toContain('INTERNAL')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('INTERNAL')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
   })
 
@@ -171,10 +185,15 @@ describe('Postgres Challenge Actions', () => {
       const program = list().pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        expect(JSON.stringify(exit.cause)).toContain('INTERNAL')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('INTERNAL')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
   })
 
@@ -194,10 +213,15 @@ describe('Postgres Challenge Actions', () => {
       const program = del('ch_non_existent' as ChallengeId).pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        expect(JSON.stringify(exit.cause)).toContain('NOT_FOUND')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('NOT_FOUND')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
 
     it('maps foreign key constraint failure to DomainError.conflict', async () => {
@@ -206,10 +230,15 @@ describe('Postgres Challenge Actions', () => {
       const program = del('ch_test_1' as ChallengeId).pipe(Effect.provide(sqlLayer))
 
       const exit = await Effect.runPromiseExit(program)
-      expect(exit._tag).toBe('Failure')
-      if (exit._tag === 'Failure') {
-        expect(JSON.stringify(exit.cause)).toContain('CONFLICT')
-      }
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('CONFLICT')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
     })
   })
 
@@ -220,7 +249,7 @@ describe('Postgres Challenge Actions', () => {
         query: 'insert',
       })
       const domainErr = error.toDomainError('challenges.create')
-      expect(domainErr._tag).toBe('DomainError')
+      expect(isDomainError(domainErr)).toBe(true)
       expect(domainErr.code).toBe('ALREADY_EXISTS')
       expect(domainErr.op).toBe('challenges.create')
     })

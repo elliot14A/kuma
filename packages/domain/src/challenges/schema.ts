@@ -1,7 +1,7 @@
 import { Schema } from 'effect'
 import { FileMap, LanguageRuntime } from '../common/schema'
 
-export const ChallengeId = Schema.String.pipe(Schema.brand('ChallengeId'))
+export const ChallengeId = Schema.NonEmptyString.pipe(Schema.brand('ChallengeId'))
 export type ChallengeId = typeof ChallengeId.Type
 
 export const Challenge = Schema.Struct({

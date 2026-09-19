@@ -17,7 +17,12 @@
     "test": "bun test",
     "lint": "biome check .",
     "lint:fix": "biome check . --write",
-    "typecheck": "bun --filter \"*\" typecheck"
+    "typecheck": "tsc --noEmit && bun --filter \"*\" typecheck"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "^4.0.0-rc.115",
+    "@effect/sql-pg": "^4.0.0-rc.115",
+    "effect": "^4.0.0-rc.115"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.10",

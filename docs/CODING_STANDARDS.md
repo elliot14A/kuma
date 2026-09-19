@@ -114,9 +114,17 @@ components/editor/monacoShell/
   export const makeTempWorkspace = (files: FileMap) =>
     Effect.acquireRelease(
       createTempDir(files),
-      (dir) => removeTempDir(dir).pipe(Effect.orDie)
+      (dir) => removeTempDir(dir).pipe(Effect.orDie),
     )
   ```
+
+### Invariant 8: No Brittle Manual `_tag` Checks / Exhaustive Pattern Matching
+- Manual imperative `_tag` comparisons (e.g., `if (res._tag === 'Failure')`, `if (err._tag === 'ParseError')`) are FORBIDDEN across all application, domain, and test code.
+- Always use idiomatic Effect pattern matching and error-handling utilities:
+  - **Error Channel Recovery**: `Effect.catchTag`, `Effect.catchTags`, `Effect.catch`
+  - **Tagged Unions & Exhaustive Branching**: `Match.type<Union>()`, `Match.value(val).pipe(Match.tag(...), Match.exhaustive)`
+  - **Exit & Either Deconstruction**: `Exit.match(exit, { onFailure, onSuccess })`, `Either.match(either, { onLeft, onRight })`, `Exit.isFailure(exit)`
+  - **Predicate Narrowing**: `Predicate.isTagged(u, 'Tag')`, `Predicate.hasProperty(u, 'prop')`, `isDomainError(u)`
 
 ---
 

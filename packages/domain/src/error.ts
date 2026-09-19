@@ -1,4 +1,4 @@
-import { Data } from 'effect'
+import { Data, Predicate } from 'effect'
 
 export type ErrorCode =
   | 'NOT_FOUND'
@@ -124,23 +124,23 @@ export class DomainError extends Data.TaggedError('DomainError')<DomainErrorProp
 }
 
 export const isDomainError = (u: unknown): u is DomainError =>
-  u instanceof DomainError ||
-  (typeof u === 'object' &&
-    u !== null &&
-    '_tag' in u &&
-    (u as { _tag: string })._tag === 'DomainError')
+  u instanceof DomainError || Predicate.isTagged(u, 'DomainError')
 
 export const toDomainError = (u: unknown, op?: string): DomainError => {
   if (isDomainError(u)) {
     return u
   }
-  if (
-    typeof u === 'object' &&
-    u !== null &&
-    'toDomainError' in u &&
-    typeof (u as { toDomainError: (op?: string) => DomainError }).toDomainError === 'function'
-  ) {
+  if (Predicate.hasProperty(u, 'toDomainError') && typeof u.toDomainError === 'function') {
     return (u as { toDomainError: (op?: string) => DomainError }).toDomainError(op)
+  }
+  if (
+    Predicate.isTagged(u, 'SchemaError') ||
+    Predicate.isTagged(u, 'ParseError') ||
+    Predicate.isTagged(u, 'RequestError') ||
+    Predicate.isTagged(u, 'HttpServerError')
+  ) {
+    const message = u instanceof Error ? u.message : String(u)
+    return DomainError.invalidInput({ message, op, cause: u })
   }
   const message = u instanceof Error ? u.message : String(u)
   return DomainError.internal({ message, op, cause: u })

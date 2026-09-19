@@ -4,6 +4,7 @@ import {
   Challenge,
   DomainError,
   getOffset,
+  isDomainError,
   makePagination,
   makePaginationResult,
   toDomainError,
@@ -58,10 +59,23 @@ describe('Challenge Domain Models', () => {
     expect(() => Schema.decodeUnknownSync(Challenge)(raw)).toThrow()
   })
 
+  it('fails decoding on empty ChallengeId', () => {
+    const raw = {
+      id: '',
+      title: 'Empty ID Challenge',
+      description: 'Desc',
+      language: 'typescript',
+      starterFiles: {},
+      testFiles: {},
+      timeLimitMinutes: 10,
+    }
+    expect(() => Schema.decodeUnknownSync(Challenge)(raw)).toThrow()
+  })
+
   describe('DomainError', () => {
     it('creates notFound error with standard props', () => {
       const err = DomainError.notFound({ entity: 'Challenge', id: 'ch_123' })
-      expect(err._tag).toBe('DomainError')
+      expect(isDomainError(err)).toBe(true)
       expect(err.code).toBe('NOT_FOUND')
       expect(err.message).toBe("Challenge with id 'ch_123' not found")
     })

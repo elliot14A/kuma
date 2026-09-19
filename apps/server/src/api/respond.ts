@@ -1,5 +1,5 @@
 import { type ErrorCode, isDomainError, toDomainError } from '@kuma/domain'
-import { Effect } from 'effect'
+import { Effect, Predicate } from 'effect'
 import { HttpServerResponse } from 'effect/unstable/http'
 
 export interface ErrorResponse {
@@ -28,11 +28,11 @@ export interface ResponseOptions {
 const isErrorLike = (u: unknown): boolean =>
   isDomainError(u) ||
   u instanceof Error ||
-  (typeof u === 'object' &&
-    u !== null &&
-    '_tag' in u &&
-    typeof (u as { _tag: unknown })._tag === 'string' &&
-    (u as { _tag: string })._tag.toLowerCase().includes('error'))
+  Predicate.hasProperty(u, 'toDomainError') ||
+  Predicate.isTagged(u, 'SchemaError') ||
+  Predicate.isTagged(u, 'ParseError') ||
+  Predicate.isTagged(u, 'RequestError') ||
+  Predicate.isTagged(u, 'HttpServerError')
 
 export const response = <T>(data?: T | unknown, options?: ResponseOptions) => {
   if (isErrorLike(data)) {

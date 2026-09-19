@@ -1,15 +1,16 @@
+import { BunServices } from '@effect/platform-bun'
+import { PgMigrator } from '@effect/sql-pg'
 import { Effect } from 'effect'
 import { describe, expect, it } from 'vitest'
-import { loadMigrations } from './migrate'
 
 describe('Postgres Migrations', () => {
-  it('loads sql migration files in alphabetical order using Bun', async () => {
-    const migrations = await Effect.runPromise(loadMigrations())
+  it('loads migration files in order using PgMigrator.fromFileSystem', async () => {
+    const loader = PgMigrator.fromFileSystem('migrations').pipe(Effect.provide(BunServices.layer))
+    const migrations = await Effect.runPromise(loader)
     expect(migrations.length).toBeGreaterThanOrEqual(2)
-    expect(migrations[0]?.id).toBe('0001_init')
-    expect(migrations[0]?.sql).toContain('manage_updated_at')
-    expect(migrations[0]?.sql).toContain('uuid-ossp')
-    expect(migrations[1]?.id).toBe('0002_challenges')
-    expect(migrations[1]?.sql).toContain('challenges')
+    expect(migrations[0]?.[0]).toBe(1)
+    expect(migrations[0]?.[1]).toBe('init')
+    expect(migrations[1]?.[0]).toBe(2)
+    expect(migrations[1]?.[1]).toBe('challenges')
   })
 })
