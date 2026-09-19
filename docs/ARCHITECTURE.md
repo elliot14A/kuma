@@ -50,29 +50,28 @@ flowchart TD
 ```
 kuma/
 ├── apps/
+│   ├── cli/src/                       # Pure Bun CLI router & subcommands
+│   │   ├── commands/
+│   │   │   ├── migrate.ts             # 'kuma migrate' runs Postgres migrations
+│   │   │   ├── server.ts              # 'kuma server' launches API gateway
+│   │   │   ├── web.ts                 # 'kuma web' launches frontend dev server
+│   │   │   └── index.ts
+│   │   ├── cli.ts                     # Subcommand parser & flag evaluator
+│   │   ├── cli.test.ts
+│   │   └── main.ts                    # CLI entrypoint
+│   │
 │   ├── server/src/
 │   │   ├── api/
-│   │   │   ├── assessments/
-│   │   │   │   ├── create.ts          # POST /api/v1/assessments
-│   │   │   │   ├── fetch.ts           # GET /api/v1/assessments/:id
-│   │   │   │   ├── list.ts            # GET /api/v1/assessments
-│   │   │   │   ├── update.ts          # PATCH /api/v1/assessments/:id
-│   │   │   │   └── index.ts           # Mounts assessments router
-│   │   │   └── executions/
-│   │   │       ├── run.ts             # POST /api/v1/executions/run
-│   │   │       ├── stream.ts          # GET /api/v1/executions/:id/stream (SSE)
-│   │   │       └── index.ts
-│   │   ├── hooks/                     # Server-level HTTP middleware & interceptor hooks
-│   │   │   ├── authHook.ts            # Magic link token verification
-│   │   │   ├── rateLimitHook.ts       # Rate limiting on execution bursts
-│   │   │   ├── telemetryHook.ts       # Request latency and access logging
+│   │   │   ├── challenges/            # Action-based HTTP route handlers
+│   │   │   │   ├── create.ts          # POST /api/v1/challenges
+│   │   │   │   ├── fetch.ts           # GET /api/v1/challenges/:id
+│   │   │   │   ├── list.ts            # GET /api/v1/challenges
+│   │   │   │   ├── delete.ts          # DELETE /api/v1/challenges/:id
+│   │   │   │   ├── challenges.test.ts
+│   │   │   │   └── index.ts           # Mounts challenges router
+│   │   │   ├── respond.ts             # Canonical unified response() helper
 │   │   │   └── index.ts
-│   │   ├── sse/                       # Real-time SSE streaming hubs
-│   │   │   ├── executionHub.ts
-│   │   │   └── index.ts
-│   │   ├── config.ts                  # KUMA_ env config via Effect Config
-│   │   ├── index.ts
-│   │   └── main.ts                    # Server bootstrap & Layer composition
+│   │   └── index.ts                   # BunHttpServer & Layer assembly
 │   │
 │   └── web/src/
 │       ├── components/                # Deeply co-located UI primitives
@@ -105,12 +104,6 @@ kuma/
 │       │   │       ├── statusBar.css.ts
 │       │   │       ├── statusBar.spec.ts
 │       │   │       └── index.ts
-│       │   ├── problem/
-│       │   │   └── problemViewer/
-│       │   │       ├── problemViewer.tsx
-│       │   │       ├── problemViewer.css.ts
-│       │   │       ├── problemViewer.spec.ts
-│       │   │       └── index.ts
 │       │   └── layout/
 │       │       └── splitPane/
 │       │           ├── splitPane.tsx
@@ -133,80 +126,44 @@ kuma/
 │           └── index.ts
 │
 ├── packages/
-│   ├── domain/src/                    # Entity-First pure domain models & rules
+│   ├── domain/src/                    # Entity-First pure domain models & contracts
 │   │   ├── common/
 │   │   │   ├── schema.ts              # LanguageRuntime, FileMap
-│   │   │   ├── errors.ts              # ValidationError
-│   │   │   └── index.ts
-│   │   ├── assessments/
-│   │   │   ├── schema.ts              # AssessmentSession, SessionStatus, SessionId
-│   │   │   ├── transition.ts          # Pure session state machine transitions
-│   │   │   ├── expiry.ts              # Time calculation & deadline logic
-│   │   │   ├── errors.ts              # SessionNotFoundError, InvalidTransitionError
+│   │   │   ├── pagination.ts          # Pagination, PaginationResult, offsets
 │   │   │   └── index.ts
 │   │   ├── challenges/
-│   │   │   ├── schema.ts              # Challenge, ChallengeId, TestManifest
-│   │   │   ├── errors.ts              # ChallengeNotFoundError, InvalidPayloadError
+│   │   │   ├── schema.ts              # Challenge, ChallengeId
+│   │   │   ├── schema.test.ts
 │   │   │   └── index.ts
-│   │   ├── executions/
-│   │   │   ├── schema.ts              # ExecutionRun, StreamChunks, TestCaseResult
-│   │   │   ├── errors.ts              # ExecutionFailedError, TimeoutError
-│   │   │   └── index.ts
-│   │   ├── telemetry/
-│   │   │   ├── schema.ts              # Keystroke deltas, blur/focus, paste events
-│   │   │   ├── scoring.ts             # Composite candidate scoring formula
-│   │   │   ├── anomaly.ts             # Keystroke burst & paste dump heuristics
-│   │   │   ├── errors.ts              # TelemetryParseError
-│   │   │   └── index.ts
+│   │   ├── config.ts                  # ServerConfig, DatabaseConfig via Effect Config
+│   │   ├── error.ts                   # Canonical DomainError & ErrorCode
 │   │   └── index.ts                   # Root domain barrel export
 │   │
 │   └── infra/src/                     # Action-Based infrastructure adapters
 │       ├── postgres/
 │       │   ├── actions/
-│       │   │   ├── assessments/
-│       │   │   │   ├── create.ts      # Effect SQL INSERT into assessments
-│       │   │   │   ├── fetch.ts       # Effect SQL SELECT WHERE id = :id
-│       │   │   │   ├── list.ts        # Effect SQL SELECT paginated
-│       │   │   │   ├── update.ts      # Effect SQL UPDATE assessments
-│       │   │   │   └── index.ts
-│       │   │   ├── executions/
-│       │   │   │   ├── record.ts
-│       │   │   │   └── index.ts
-│       │   │   └── telemetry/
-│       │   │       ├── appendBatch.ts
-│       │   │       ├── fetchStream.ts
+│       │   │   └── challenges/        # Scoped subpath: @postgres/challenges
+│       │   │       ├── create.ts      # Effect SQL INSERT returning Challenge
+│       │   │       ├── fetch.ts       # Effect SQL SELECT WHERE id = :id
+│       │   │       ├── list.ts        # Effect SQL SELECT paginated
+│       │   │       ├── delete.ts      # Effect SQL DELETE WHERE id = :id
+│       │   │       ├── challenges.test.ts
 │       │   │       └── index.ts
-│       │   ├── client.ts              # PgLive connection pool layer
-│       │   ├── errors.ts              # PostgresConnectionError, QueryError
+│       │   ├── migrations/
+│       │   │   ├── 0001_init.sql      # uuid-ossp, manage_updated_at, case_insensitive
+│       │   │   └── 0002_challenges.sql
+│       │   ├── migrate.ts             # Bun-native dynamic migration runner
+│       │   ├── migrate.test.ts
+│       │   ├── client.ts              # Pg layer (PgClient.layerConfig)
+│       │   ├── error.ts               # PostgresError & mapPostgresError mapper
 │       │   └── index.ts
 │       │
-│       ├── sandbox/
+│       ├── sandbox/                   # Container runner & test parsers
 │       │   ├── actions/
-│       │   │   ├── spawn.ts           # Spawns isolated Docker container / micro-VM
-│       │   │   ├── execute.ts         # Runs Vitest / pytest inside container
-│       │   │   ├── terminate.ts       # SIGKILL / cleanup container
-│       │   │   └── index.ts
-│       │   ├── parsers/
-│       │   │   ├── vitest.ts          # Structured Vitest output parser
-│       │   │   ├── pytest.ts          # Structured pytest output parser
-│       │   │   └── index.ts
-│       │   ├── hooks/                 # Sandbox container lifecycle hooks
-│       │   │   ├── onContainerSpawn.ts
-│       │   │   ├── onTimeout.ts
-│       │   │   └── index.ts
-│       │   ├── errors.ts              # ContainerTimeoutError, ContainerOOMError
 │       │   └── index.ts
 │       │
-│       └── nebius/
+│       └── nebius/                    # LLM challenge synthesis & scoring
 │           ├── actions/
-│           │   ├── generate.ts        # Prompts Nemotron to synthesize multi-file challenge
-│           │   ├── evaluate.ts        # Prompts Nemotron to score candidate solution
-│           │   └── index.ts
-│           ├── prompts/
-│           │   ├── challengeTemplate.ts
-│           │   ├── evaluationTemplate.ts
-│           │   └── index.ts
-│           ├── errors.ts              # NebiusRateLimitError, SynthesisError
 │           └── index.ts
 │
 ├── docs/                              # Architecture, standards, and milestone plans

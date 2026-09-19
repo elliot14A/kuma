@@ -39,59 +39,62 @@ const encodeChallenge = Schema.encode(Challenge)
 Define services using `Context.Tag` and provide implementations with `Layer`:
 
 ```typescript
-import { Context, Effect, Layer, Stream } from "effect"
-import type { ExecutionChunk, LanguageRuntime, FileMap } from "@kuma/domain"
-import type { SandboxError } from "./errors.js"
+import { PgClient } from "@effect/sql-pg"
+import { DatabaseConfig } from "@kuma/domain"
+import { Effect, Layer } from "effect"
 
-export class ExecutionService extends Context.Tag("ExecutionService")<
-  ExecutionService,
-  {
-    readonly execute: (
-      files: FileMap,
-      language: LanguageRuntime,
-      timeoutSeconds: number
-    ) => Stream.Stream<ExecutionChunk, SandboxError>
-  }
->() {}
+// Layer standard: Pg exports connection layer configured from domain DatabaseConfig
+export const Pg = PgClient.layerConfig({
+  url: DatabaseConfig.pipe(Config.map((c) => c.url)),
+})
 
-// Live Layer Implementation
-export const ExecutionServiceDockerLive = Layer.succeed(
-  ExecutionService,
-  ExecutionService.of({
-    execute: (files, language, timeoutSeconds) => {
-      // Stream execution chunks
-      return Stream.make(/* ... */)
-    },
+// Action operations resolve the client via Context Tag
+export const create = (payload: CreateInput) =>
+  Effect.gen(function* () {
+    const sql = yield* PgClient.PgClient
+    const rows = yield* sql<Challenge>`
+      insert into challenges (title, starter_files)
+      values (${payload.title}, ${sql.json(payload.starterFiles)})
+      returning id, title, starter_files as "starterFiles"
+    `
+    return rows[0]
   })
-)
 ```
 
 ---
 
-## 3. Tagged Errors & Error Channels
+## 3. Canonical DomainError & Error Channels
 
-Always use `Data.TaggedError`:
+Use the central `DomainError` in `packages/domain/src/error.ts` with standardized static constructors:
 
 ```typescript
-import { Data, Effect } from "effect"
+import { DomainError } from "@kuma/domain"
+import { Effect } from "effect"
 
-export class SessionNotFoundError extends Data.TaggedError("SessionNotFoundError")<{
-  readonly sessionId: string
-}> {}
-
-export const findSession = (id: string): Effect.Effect<Session, SessionNotFoundError> =>
+export const fetchChallenge = (id: ChallengeId): Effect.Effect<Challenge, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
-    const session = yield* db.lookup(id)
-    if (!session) {
-      return yield* new SessionNotFoundError({ sessionId: id })
+    const sql = yield* PgClient.PgClient
+    const rows = yield* sql<Challenge>`select * from challenges where id = ${id}`
+    const challenge = rows[0]
+    if (!challenge) {
+      return yield* DomainError.notFound({ entity: "Challenge", id })
     }
-    return session
+    return challenge
   })
 ```
 
 ---
 
-## 4. Streaming with Effect Stream
+## 4. SQL Queries & JSON Parameterization
+
+- Use direct typed queries: `sql<Challenge>`
+- Column aliasing for camelCase mapping: `starter_files as "starterFiles"`
+- JSON objects parameterization: `sql.json(data)`
+- Map SQL driver errors to `DomainError`: `Effect.mapError((cause) => mapPostgresError(cause, 'insert', 'challenges.create'))`
+
+---
+
+## 5. Streaming with Effect Stream
 
 For real-time terminal chunks and test execution logs:
 
