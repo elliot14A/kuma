@@ -1,10 +1,12 @@
 import { PgClient } from '@effect/sql-pg'
 import { type Challenge, type ChallengeId, DomainError } from '@kuma/domain'
 import { Effect } from 'effect'
+import { debug } from '../../../logger'
 import { mapPostgresError } from '../../error'
 
 export const fetch = (id: ChallengeId): Effect.Effect<Challenge, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
+    yield* debug('fetching challenge by id', { id })
     const sql = yield* PgClient.PgClient
     const rows = yield* sql<Challenge>`
       select id, title, description, language,

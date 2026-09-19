@@ -1,8 +1,9 @@
-import { Pg, runMigrations } from '@kuma/infra'
+import { debug, info, Pg, runMigrations } from '@kuma/infra'
 import { Effect } from 'effect'
 
 export const run = Effect.gen(function* () {
-  yield* Effect.log('[kuma-cli] Running database migrations...')
+  yield* info('starting database migrations', { command: 'migrate' })
+  yield* debug('executing migration runner with postgres layer')
   yield* runMigrations().pipe(Effect.provide(Pg))
-  yield* Effect.log('[kuma-cli] Database migrations completed successfully.')
+  yield* info('database migrations completed successfully', { command: 'migrate' })
 })

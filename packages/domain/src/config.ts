@@ -1,4 +1,4 @@
-import { Config, Redacted } from 'effect'
+import { Config, Redacted, Schema } from 'effect'
 
 export const ServerConfig = {
   port: Config.Number('KUMA_SERVER_PORT').pipe(Config.withDefault(8080)),
@@ -12,7 +12,19 @@ export const DatabaseConfig = {
   ),
 }
 
+export const LogConfig = {
+  format: Config.schema(
+    Schema.Literals(['text', 'compact', 'json', 'pretty']),
+    'KUMA_LOG_FORMAT',
+  ).pipe(Config.withDefault('text')),
+  level: Config.schema(
+    Schema.Literals(['all', 'trace', 'debug', 'info', 'warn', 'error', 'none']),
+    'KUMA_LOG_LEVEL',
+  ).pipe(Config.withDefault('info')),
+}
+
 export const AppConfig = {
   server: ServerConfig,
   database: DatabaseConfig,
+  log: LogConfig,
 }

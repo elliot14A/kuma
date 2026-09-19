@@ -1,6 +1,7 @@
 import { PgClient } from '@effect/sql-pg'
 import { type Challenge, DomainError } from '@kuma/domain'
 import { Effect } from 'effect'
+import { debug, info } from '../../../logger'
 import { mapPostgresError } from '../../error'
 
 export interface CreateChallengeInput {
@@ -16,6 +17,10 @@ export const create = (
   payload: CreateChallengeInput,
 ): Effect.Effect<Challenge, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
+    yield* debug('inserting challenge into database', {
+      title: payload.title,
+      language: payload.language,
+    })
     const sql = yield* PgClient.PgClient
     const rows = yield* sql<Challenge>`
       insert into challenges (
@@ -45,5 +50,6 @@ export const create = (
       )
     }
 
+    yield* info('challenge created successfully', { id: challenge.id })
     return challenge
   })

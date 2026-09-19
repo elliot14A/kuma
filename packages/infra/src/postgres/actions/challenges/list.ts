@@ -9,6 +9,7 @@ import {
   type PaginationResult,
 } from '@kuma/domain'
 import { Effect } from 'effect'
+import { debug } from '../../../logger'
 import { mapPostgresError } from '../../error'
 
 interface CountRow {
@@ -21,6 +22,11 @@ export const list = (
   Effect.gen(function* () {
     const p = paginationInput ?? makePagination()
     const offset = getOffset(p)
+    yield* debug('listing challenges from database', {
+      page: p.page,
+      limit: p.limit,
+      offset,
+    })
     const sql = yield* PgClient.PgClient
 
     const countRows = yield* sql<CountRow>`
