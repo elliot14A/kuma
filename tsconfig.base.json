@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@kuma/domain": ["./packages/domain/src/index.ts"],
+      "@kuma/domain/*": ["./packages/domain/src/*"],
+      "@kuma/infra": ["./packages/infra/src/index.ts"],
+      "@kuma/infra/postgres/actions/*": ["./packages/infra/src/postgres/actions/*"],
+      "@kuma/infra/*": ["./packages/infra/src/*"],
+      "@postgres/*": ["./packages/infra/src/postgres/actions/*"]
+    }
+  }
+}

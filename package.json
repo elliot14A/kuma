@@ -1,0 +1,28 @@
+{
+  "name": "kuma",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "kuma": "bun run apps/cli/src/main.ts",
+    "cli": "bun run apps/cli/src/main.ts",
+    "migrate": "bun run apps/cli/src/main.ts migrate",
+    "dev:server": "bun --filter @kuma/server dev",
+    "dev:web": "bun --filter @kuma/web dev",
+    "dev": "bun --filter \"*\" dev",
+    "build": "bun --filter \"*\" build",
+    "test": "bun test",
+    "lint": "biome check .",
+    "lint:fix": "biome check . --write",
+    "typecheck": "bun --filter \"*\" typecheck"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.10",
+    "@types/bun": "^1.4.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}

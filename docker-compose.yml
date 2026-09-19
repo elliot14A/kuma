@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kuma-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kuma
+      POSTGRES_PASSWORD: kuma_dev_password
+      POSTGRES_DB: kuma
+    ports:
+      - "5432:5432"
+    volumes:
+      - kuma_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kuma -d kuma"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  kuma_pgdata:
