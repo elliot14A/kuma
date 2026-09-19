@@ -1,0 +1,26 @@
+{
+  "name": "@kuma/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "kuma": "./src/main.ts"
+  },
+  "scripts": {
+    "dev": "bun src/main.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "^4.0.0-rc.115",
+    "@effect/sql-pg": "^4.0.0-rc.115",
+    "@kuma/domain": "workspace:*",
+    "@kuma/infra": "workspace:*",
+    "@kuma/server": "workspace:*",
+    "effect": "^4.0.0-rc.115"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "typescript": "^6.0.3"
+  }
+}
