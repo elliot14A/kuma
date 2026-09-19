@@ -1,5 +1,5 @@
 {
-  description = "Kuma autonomous real-world technical assessment platform";
+  description = "Autonomous AI engineering assessment platform that benchmarks real-world coding, debugging, and system problem-solving";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

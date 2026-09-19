@@ -1,6 +1,6 @@
 # 🐻 Kuma (熊)
 
-> **Autonomous Real-World Technical Assessment Platform**  
+> **Autonomous AI engineering assessment platform that benchmarks real-world coding, debugging, and system problem-solving**  
 > Built for the **Nebius x NVIDIA Global AI Hackathon** (Coding & Agentic Engineering Track).
 
 ---
