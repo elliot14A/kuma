@@ -16,7 +16,10 @@ export const list = Effect.gen(function* () {
   return yield* challenges.list(pagination).pipe(
     Effect.matchEffect({
       onFailure: (err) => response(err, { op: 'challenges.list' }),
-      onSuccess: (result) => response(result),
+      onSuccess: (result) =>
+        response(result, {
+          message: 'challenges listed successfully',
+        }),
     }),
   )
 })

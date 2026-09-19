@@ -13,6 +13,10 @@ export const create = Effect.gen(function* () {
 }).pipe(
   Effect.matchEffect({
     onFailure: (err) => response(err, { op: 'challenges.create' }),
-    onSuccess: (challenge) => response(challenge, { status: 201 }),
+    onSuccess: (challenge) =>
+      response(challenge, {
+        status: 201,
+        message: 'challenge created successfully',
+      }),
   }),
 )

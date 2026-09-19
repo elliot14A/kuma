@@ -3,7 +3,7 @@ import type { Challenge, PaginationResult } from '@kuma/domain'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { describe, expect, it } from 'vitest'
-import type { ErrorResponse } from '../respond'
+import type { ErrorResponse, Response } from '../respond'
 import { challengesRouter } from './index'
 
 const createMockSqlLayer = (
@@ -60,11 +60,13 @@ describe('Challenges API Endpoints', () => {
       const response = await handler(request, undefined)
       expect(response.status).toBe(201)
 
-      const body = (await response.json()) as Challenge
-      expect(body.id).toBe('ch_test_123')
-      expect(body.title).toBe(validPayload.title)
-      expect(body.language).toBe('typescript')
-      expect(body.starterFiles).toEqual(validPayload.starterFiles)
+      const body = (await response.json()) as Response<Challenge>
+      expect(body.status).toBe('success')
+      expect(body.message).toBe('challenge created successfully')
+      expect(body.data.id).toBe('ch_test_123')
+      expect(body.data.title).toBe(validPayload.title)
+      expect(body.data.language).toBe('typescript')
+      expect(body.data.starterFiles).toEqual(validPayload.starterFiles)
     })
 
     it('returns 400 Bad Request with standardized ErrorResponse when payload schema is invalid', async () => {
@@ -86,6 +88,7 @@ describe('Challenges API Endpoints', () => {
       expect(response.status).toBe(400)
 
       const body = (await response.json()) as ErrorResponse
+      expect(body.status).toBe('error')
       expect(body.code).toBe('INVALID_INPUT')
       expect(body.message).toBeTruthy()
       expect(body.op).toBe('challenges.create')
@@ -106,6 +109,7 @@ describe('Challenges API Endpoints', () => {
       expect(response.status).toBe(400)
 
       const body = (await response.json()) as ErrorResponse
+      expect(body.status).toBe('error')
       expect(body.code).toBe('INVALID_INPUT')
       expect(body.message).toBeTruthy()
     })
@@ -128,9 +132,11 @@ describe('Challenges API Endpoints', () => {
       const response = await handler(request, undefined)
       expect(response.status).toBe(200)
 
-      const body = (await response.json()) as Challenge
-      expect(body.id).toBe('ch_test_123')
-      expect(body.title).toBe(validPayload.title)
+      const body = (await response.json()) as Response<Challenge>
+      expect(body.status).toBe('success')
+      expect(body.message).toBe('challenge fetched successfully')
+      expect(body.data.id).toBe('ch_test_123')
+      expect(body.data.title).toBe(validPayload.title)
     })
 
     it('returns 404 Not Found with standardized ErrorResponse when challenge does not exist', async () => {
@@ -143,6 +149,7 @@ describe('Challenges API Endpoints', () => {
       expect(response.status).toBe(404)
 
       const body = (await response.json()) as ErrorResponse
+      expect(body.status).toBe('error')
       expect(body.code).toBe('NOT_FOUND')
       expect(body.message).toContain("Challenge with id 'ch_non_existent' not found")
       expect(body.op).toBe('challenges.fetch')
@@ -158,6 +165,7 @@ describe('Challenges API Endpoints', () => {
       expect(response.status).toBe(500)
 
       const body = (await response.json()) as ErrorResponse
+      expect(body.status).toBe('error')
       expect(body.code).toBe('INTERNAL')
       expect(body.op).toBe('challenges.fetch')
     })
@@ -201,14 +209,16 @@ describe('Challenges API Endpoints', () => {
       const response = await handler(request, undefined)
       expect(response.status).toBe(200)
 
-      const body = (await response.json()) as PaginationResult<Challenge>
-      expect(body.items).toHaveLength(2)
-      expect(body.totalItems).toBe(2)
-      expect(body.page).toBe(1)
-      expect(body.limit).toBe(10)
-      expect(body.totalPages).toBe(1)
-      expect(body.items[0]?.id).toBe('ch_1')
-      expect(body.items[1]?.id).toBe('ch_2')
+      const body = (await response.json()) as Response<PaginationResult<Challenge>>
+      expect(body.status).toBe('success')
+      expect(body.message).toBe('challenges listed successfully')
+      expect(body.data.items).toHaveLength(2)
+      expect(body.data.totalItems).toBe(2)
+      expect(body.data.page).toBe(1)
+      expect(body.data.limit).toBe(10)
+      expect(body.data.totalPages).toBe(1)
+      expect(body.data.items[0]?.id).toBe('ch_1')
+      expect(body.data.items[1]?.id).toBe('ch_2')
     })
   })
 
@@ -237,6 +247,7 @@ describe('Challenges API Endpoints', () => {
       expect(response.status).toBe(404)
 
       const body = (await response.json()) as ErrorResponse
+      expect(body.status).toBe('error')
       expect(body.code).toBe('NOT_FOUND')
       expect(body.message).toContain("Challenge with id 'ch_non_existent' not found")
       expect(body.op).toBe('challenges.delete')

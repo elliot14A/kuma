@@ -14,6 +14,9 @@ export const fetch = Effect.gen(function* () {
 }).pipe(
   Effect.matchEffect({
     onFailure: (err) => response(err, { op: 'challenges.fetch' }),
-    onSuccess: (challenge) => response(challenge),
+    onSuccess: (challenge) =>
+      response(challenge, {
+        message: 'challenge fetched successfully',
+      }),
   }),
 )

@@ -11,12 +11,18 @@ class TaggedPayload extends Data.TaggedClass('CustomPayload')<{
 
 describe('API response helper', () => {
   it('returns 200 with JSON body for standard objects', async () => {
-    const resEffect = response({ hello: 'world' })
+    const resEffect = response({ hello: 'world' }, { message: 'success' })
     const httpRes = await Effect.runPromise(resEffect)
     expect(httpRes.status).toBe(200)
     const webRes = await HttpServerResponse.toWeb(httpRes)
-    const json = (await webRes.json()) as { hello: string }
-    expect(json.hello).toBe('world')
+    const json = (await webRes.json()) as {
+      status: string
+      message: string
+      data: { hello: string }
+    }
+    expect(json.status).toBe('success')
+    expect(json.message).toBe('success')
+    expect(json.data.hello).toBe('world')
   })
 
   it('does NOT misclassify tagged data objects as errors', async () => {
@@ -25,10 +31,15 @@ describe('API response helper', () => {
     const httpRes = await Effect.runPromise(resEffect)
     expect(httpRes.status).toBe(200)
     const webRes = await HttpServerResponse.toWeb(httpRes)
-    const json = (await webRes.json()) as { _tag: string; name: string; count: number }
-    expect(json._tag).toBe('CustomPayload')
-    expect(json.name).toBe('kuma')
-    expect(json.count).toBe(42)
+    const json = (await webRes.json()) as {
+      status: string
+      message: string
+      data: { _tag: string; name: string; count: number }
+    }
+    expect(json.status).toBe('success')
+    expect(json.data._tag).toBe('CustomPayload')
+    expect(json.data.name).toBe('kuma')
+    expect(json.data.count).toBe(42)
   })
 
   it('handles DomainError correctly with mapped status code', async () => {
@@ -42,7 +53,13 @@ describe('API response helper', () => {
     const httpRes = await Effect.runPromise(resEffect)
     expect(httpRes.status).toBe(404)
     const webRes = await HttpServerResponse.toWeb(httpRes)
-    const json = (await webRes.json()) as { code: string; message: string; op?: string }
+    const json = (await webRes.json()) as {
+      status: string
+      code: string
+      message: string
+      op?: string
+    }
+    expect(json.status).toBe('error')
     expect(json.code).toBe('NOT_FOUND')
     expect(json.message).toBe('Resource not found')
     expect(json.op).toBe('test.fetch')
@@ -54,7 +71,13 @@ describe('API response helper', () => {
     const httpRes = await Effect.runPromise(resEffect)
     expect(httpRes.status).toBe(500)
     const webRes = await HttpServerResponse.toWeb(httpRes)
-    const json = (await webRes.json()) as { code: string; message: string; op?: string }
+    const json = (await webRes.json()) as {
+      status: string
+      code: string
+      message: string
+      op?: string
+    }
+    expect(json.status).toBe('error')
     expect(json.code).toBe('INTERNAL')
     expect(json.message).toBe('Unexpected crash')
     expect(json.op).toBe('test.crash')
