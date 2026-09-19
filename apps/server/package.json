@@ -1,0 +1,26 @@
+{
+  "name": "@kuma/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build --target=bun src/index.ts --outdir dist",
+    "test": "vitest run",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "^4.0.0-rc.115",
+    "@effect/sql-pg": "^4.0.0-rc.115",
+    "@kuma/domain": "workspace:*",
+    "@kuma/infra": "workspace:*",
+    "effect": "^4.0.0-rc.115"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.0",
+    "typescript": "^6.0.3"
+  }
+}
