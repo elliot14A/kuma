@@ -8,7 +8,7 @@ export const textLogger = Logger.layer([Logger.consoleLogFmt])
 export const jsonLogger = Logger.layer([Logger.consoleJson])
 export const prettyLogger = Logger.layer([Logger.consolePretty()])
 
-export const LoggerLive = Layer.unwrap(
+export const AppLogger = Layer.unwrap(
   Effect.gen(function* () {
     const format = yield* LogConfig.format
     if (format === 'json') {

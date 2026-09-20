@@ -19,14 +19,10 @@ const JunitDocSchema = Schema.Struct({
       '@_tests': Schema.optional(Schema.Union([Schema.Number, Schema.String])),
       '@_failures': Schema.optional(Schema.Union([Schema.Number, Schema.String])),
       '@_errors': Schema.optional(Schema.Union([Schema.Number, Schema.String])),
-      testsuite: Schema.optional(
-        Schema.Union([JunitSuiteSchema, Schema.Array(JunitSuiteSchema)]),
-      ),
+      testsuite: Schema.optional(Schema.Union([JunitSuiteSchema, Schema.Array(JunitSuiteSchema)])),
     }),
   ),
-  testsuite: Schema.optional(
-    Schema.Union([JunitSuiteSchema, Schema.Array(JunitSuiteSchema)]),
-  ),
+  testsuite: Schema.optional(Schema.Union([JunitSuiteSchema, Schema.Array(JunitSuiteSchema)])),
 })
 
 type JunitDoc = typeof JunitDocSchema.Type
@@ -42,10 +38,9 @@ export const parseJunitReport = (
   xmlContent: string,
   exitCode: number,
 ): { status: ExecutionStatusEnum; summary?: TestSummary } => {
-  if (!xmlContent || !xmlContent.trim()) {
+  if (!xmlContent?.trim()) {
     return {
-      status:
-        exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
+      status: exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
     }
   }
 
@@ -56,8 +51,7 @@ export const parseJunitReport = (
 
   return Option.match(decodedOpt, {
     onNone: () => ({
-      status:
-        exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
+      status: exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
     }),
     onSome: (doc: JunitDoc) => {
       let total = 0
@@ -89,9 +83,7 @@ export const parseJunitReport = (
           }
         }
       } else if (doc.testsuite) {
-        const suites = Array.isArray(doc.testsuite)
-          ? doc.testsuite
-          : [doc.testsuite]
+        const suites = Array.isArray(doc.testsuite) ? doc.testsuite : [doc.testsuite]
         for (const suite of suites) {
           accumulateSuite(suite)
         }
@@ -114,8 +106,7 @@ export const parseJunitReport = (
       }
 
       return {
-        status:
-          exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
+        status: exitCode === 0 ? ExecutionStatusEnum.Passed : ExecutionStatusEnum.Failed,
       }
     },
   })
