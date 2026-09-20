@@ -19,7 +19,7 @@ RUN bun run build
 FROM oven/bun:1-alpine AS runtime
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates docker-cli
 
 COPY --from=builder /app/node_modules /app/node_modules
 COPY --from=builder /app/package.json /app/package.json

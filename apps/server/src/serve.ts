@@ -1,6 +1,6 @@
 import { BunHttpServer } from '@effect/platform-bun'
 import { ServerConfig } from '@kuma/domain'
-import { LoggerLive, Pg } from '@kuma/infra'
+import { AppLogger, Pg, Sandbox } from '@kuma/infra'
 import { Effect, Layer } from 'effect'
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from 'effect/unstable/http'
 import { apiRouter } from './api'
@@ -72,7 +72,8 @@ export const Router = Layer.merge(apiRouter, webRouter)
 export const App = HttpRouter.serve(Router).pipe(
   Layer.provide(Server),
   Layer.provide(Pg),
-  Layer.provide(LoggerLive),
+  Layer.provide(Sandbox),
+  Layer.provide(AppLogger),
 )
 
 export const serve = Layer.launch(App)
