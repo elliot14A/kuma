@@ -1,16 +1,15 @@
 import { PgClient } from '@effect/sql-pg'
-import { type Challenge, DomainError } from '@kuma/domain'
+import { type Challenge, DomainError, validateMetadata } from '@kuma/domain'
+import { debug, info } from '@kuma/infra/logger'
+import { mapPostgresError } from '@kuma/infra/postgres'
 import { Effect } from 'effect'
-import { debug, info } from '../../../logger'
-import { mapPostgresError } from '../../error'
 
 export interface CreateChallengeInput {
   readonly title: string
   readonly description: string
   readonly language: Challenge['language']
-  readonly starterFiles: Challenge['starterFiles']
-  readonly testFiles: Challenge['testFiles']
   readonly timeLimitMinutes: number
+  readonly metadata: Challenge['metadata']
 }
 
 export const create = (
@@ -21,19 +20,23 @@ export const create = (
       title: payload.title,
       language: payload.language,
     })
+
+    yield* validateMetadata(payload.metadata)
+
     const sql = yield* PgClient.PgClient
     const rows = yield* sql<Challenge>`
       insert into challenges (
-        title, description, language, starter_files, test_files, time_limit_minutes
+        title, description, language, time_limit_minutes, metadata
       ) values (
         ${payload.title}, ${payload.description},
-        ${payload.language}, ${sql.json(payload.starterFiles)},
-        ${sql.json(payload.testFiles)}, ${payload.timeLimitMinutes}
+        ${payload.language}, ${payload.timeLimitMinutes},
+        ${sql.json(payload.metadata)}
       )
       returning id, title, description, language,
-                starter_files as "starterFiles",
-                test_files as "testFiles",
-                time_limit_minutes as "timeLimitMinutes"
+                time_limit_minutes as "timeLimitMinutes",
+                metadata,
+                created_at as "createdAt",
+                updated_at as "updatedAt"
     `.pipe(
       Effect.mapError((cause) =>
         mapPostgresError(cause, 'insert into challenges', 'challenges.create'),
@@ -44,7 +47,7 @@ export const create = (
     if (!challenge) {
       return yield* Effect.fail(
         DomainError.internal({
-          message: 'Failed to insert challenge record',
+          message: 'failed to insert challenge record',
           op: 'challenges.create',
         }),
       )

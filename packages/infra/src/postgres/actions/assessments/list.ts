@@ -1,6 +1,6 @@
 import { PgClient } from '@effect/sql-pg'
 import {
-  type Challenge,
+  type Assessment,
   type DomainError,
   getOffset,
   makePagination,
@@ -15,23 +15,25 @@ import type { CountRow } from '../common'
 
 export const list = (
   paginationInput?: Pagination,
-): Effect.Effect<PaginationResult<Challenge>, DomainError, PgClient.PgClient> =>
+): Effect.Effect<PaginationResult<Assessment>, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
     const p = paginationInput ?? makePagination()
     const offset = getOffset(p)
-    yield* debug('listing challenges from database', {
+
+    yield* debug('listing assessments from database', {
       page: p.page,
       limit: p.limit,
       offset,
     })
+
     const sql = yield* PgClient.PgClient
 
     const countRows = yield* sql<CountRow>`
       select count(*)::int as count
-      from challenges
+      from assessments
     `.pipe(
       Effect.mapError((cause) =>
-        mapPostgresError(cause, 'select count from challenges', 'challenges.list'),
+        mapPostgresError(cause, 'select count from assessments', 'assessments.list'),
       ),
     )
 
@@ -40,18 +42,31 @@ export const list = (
       return makePaginationResult([], 0, p)
     }
 
-    const items = yield* sql<Challenge>`
-      select id, title, description, language,
-             time_limit_minutes as "timeLimitMinutes",
-             metadata,
-             created_at as "createdAt",
-             updated_at as "updatedAt"
-      from challenges
-      order by created_at desc
+    const items = yield* sql<Assessment>`
+      select
+        a.id,
+        a.candidate_name as "candidateName",
+        a.candidate_email as "candidateEmail",
+        a.status,
+        a.started_at as "startedAt",
+        a.submitted_at as "submittedAt",
+        a.metadata,
+        a.created_at as "createdAt",
+        a.updated_at as "updatedAt",
+        coalesce(
+          array_agg(ac.challenge_id order by ac.sort_order)
+            filter (where ac.challenge_id is not null),
+          array[]::uuid[]
+        ) as "challengeIds"
+      from assessments a
+      left join assessment_challenges ac
+          on ac.assessment_id = a.id
+      group by a.id
+      order by a.created_at desc
       limit ${p.limit} offset ${offset}
     `.pipe(
       Effect.mapError((cause) =>
-        mapPostgresError(cause, 'select from challenges', 'challenges.list'),
+        mapPostgresError(cause, 'select from assessments', 'assessments.list'),
       ),
     )
 

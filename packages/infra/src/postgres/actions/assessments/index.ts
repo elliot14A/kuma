@@ -1,4 +1,4 @@
-export { type CreateChallengeInput, create } from './create'
+export { type CreateAssessmentInput, create } from './create'
 export { del } from './delete'
 export { fetch } from './fetch'
 export { list } from './list'

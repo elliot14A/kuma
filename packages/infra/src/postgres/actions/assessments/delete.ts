@@ -1,32 +1,33 @@
 import { PgClient } from '@effect/sql-pg'
-import { type ChallengeId, DomainError } from '@kuma/domain'
+import { type AssessmentId, DomainError } from '@kuma/domain'
 import { debug, info } from '@kuma/infra/logger'
 import { mapPostgresError } from '@kuma/infra/postgres'
 import { Effect } from 'effect'
 
-export const del = (id: ChallengeId): Effect.Effect<void, DomainError, PgClient.PgClient> =>
+export const del = (id: AssessmentId): Effect.Effect<void, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
-    yield* debug('deleting challenge by id', { id })
+    yield* debug('deleting assessment by id', { id })
+
     const sql = yield* PgClient.PgClient
     const rows = yield* sql`
-      delete from challenges where id = ${id} returning id
+      delete from assessments where id = ${id} returning id
     `.pipe(
       Effect.mapError((cause) =>
-        mapPostgresError(cause, 'delete from challenges', 'challenges.delete'),
+        mapPostgresError(cause, 'delete from assessments', 'assessments.delete'),
       ),
     )
 
     if (rows.length === 0) {
       return yield* Effect.fail(
         DomainError.notFound({
-          entity: 'Challenge',
+          entity: 'Assessment',
           id,
-          op: 'challenges.delete',
+          op: 'assessments.delete',
         }),
       )
     }
 
-    yield* info('challenge deleted successfully', { id })
+    yield* info('assessment deleted successfully', { id })
   })
 
 export { del as delete }

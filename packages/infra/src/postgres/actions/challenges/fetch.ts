@@ -1,8 +1,8 @@
 import { PgClient } from '@effect/sql-pg'
 import { type Challenge, type ChallengeId, DomainError } from '@kuma/domain'
+import { debug } from '@kuma/infra/logger'
+import { mapPostgresError } from '@kuma/infra/postgres'
 import { Effect } from 'effect'
-import { debug } from '../../../logger'
-import { mapPostgresError } from '../../error'
 
 export const fetch = (id: ChallengeId): Effect.Effect<Challenge, DomainError, PgClient.PgClient> =>
   Effect.gen(function* () {
@@ -10,9 +10,10 @@ export const fetch = (id: ChallengeId): Effect.Effect<Challenge, DomainError, Pg
     const sql = yield* PgClient.PgClient
     const rows = yield* sql<Challenge>`
       select id, title, description, language,
-             starter_files as "starterFiles",
-             test_files as "testFiles",
-             time_limit_minutes as "timeLimitMinutes"
+             time_limit_minutes as "timeLimitMinutes",
+             metadata,
+             created_at as "createdAt",
+             updated_at as "updatedAt"
       from challenges
       where id = ${id}
     `.pipe(

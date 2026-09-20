@@ -1,3 +1,3 @@
-export * from './client'
-export * from './error'
-export * from './migrate'
+export { Pg } from './client'
+export { mapPostgresError, PostgresError } from './error'
+export { runMigrations } from './migrate'

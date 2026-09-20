@@ -10,14 +10,14 @@ export default Effect.gen(function* () {
       title varchar(255) not null,
       description text not null,
       language varchar(32) not null,
-      starter_files jsonb not null default '{}'::jsonb,
-      test_files jsonb not null default '{}'::jsonb,
       time_limit_minutes int not null default 45,
+      metadata jsonb not null default '{}'::jsonb,
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     )
   `
 
   yield* sql`create index if not exists idx_challenges_language on challenges(language)`
+  yield* sql`create index if not exists idx_challenges_metadata on challenges using gin(metadata)`
   yield* sql`select manage_updated_at('challenges')`
 })

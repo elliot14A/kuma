@@ -1,40 +1,20 @@
-import { PgClient } from '@effect/sql-pg'
 import { type ChallengeId, isDomainError, makePagination } from '@kuma/domain'
-import { Effect, Exit, Layer } from 'effect'
+import { PostgresError } from '@kuma/infra/postgres'
+import { Effect, Exit } from 'effect'
 import { describe, expect, it } from 'vitest'
-import { PostgresError } from '../../error'
-import { type CreateChallengeInput, create, del, fetch, list } from './index'
-
-const createMockSqlLayer = (
-  handler: (strings: TemplateStringsArray, values: unknown[]) => Effect.Effect<unknown[], unknown>,
-) => {
-  const mockSql = Object.assign(
-    (strings: TemplateStringsArray, ...values: unknown[]) => handler(strings, values),
-    {
-      safe: null,
-      withoutTransforms: () => mockSql,
-      reserve: Effect.die('not implemented'),
-      withTransaction: <A, E, R>(self: Effect.Effect<A, E, R>) => self,
-      reactive: () => Effect.die('not implemented'),
-      reactiveMailbox: () => Effect.die('not implemented'),
-      config: {},
-      json: (data: unknown) => data,
-      listen: () => Effect.die('not implemented'),
-      notify: () => Effect.die('not implemented'),
-    },
-  )
-
-  return Layer.succeed(PgClient.PgClient, mockSql as unknown as PgClient.PgClient)
-}
+import { createMockSqlLayer } from '../common'
+import { type CreateChallengeInput, create, del, fetch, list, patch } from './index'
 
 describe('Postgres Challenge Actions', () => {
   const samplePayload: CreateChallengeInput = {
     title: 'Test Challenge',
     description: 'Solve this test challenge',
     language: 'typescript',
-    starterFiles: { 'index.ts': "console.log('starter')" },
-    testFiles: { 'index.test.ts': "console.log('test')" },
     timeLimitMinutes: 45,
+    metadata: {
+      starterFiles: { 'index.ts': "console.log('starter')" },
+      testFiles: { 'index.test.ts': "console.log('test')" },
+    },
   }
 
   describe('create', () => {
@@ -44,9 +24,10 @@ describe('Postgres Challenge Actions', () => {
         title: samplePayload.title,
         description: samplePayload.description,
         language: samplePayload.language,
-        starterFiles: samplePayload.starterFiles,
-        testFiles: samplePayload.testFiles,
         timeLimitMinutes: samplePayload.timeLimitMinutes,
+        metadata: samplePayload.metadata,
+        createdAt: '2026-09-19T10:00:00.000Z',
+        updatedAt: '2026-09-19T10:00:00.000Z',
       }
 
       const sqlLayer = createMockSqlLayer(() => Effect.succeed([mockRow]))
@@ -56,8 +37,7 @@ describe('Postgres Challenge Actions', () => {
       const result = await Effect.runPromise(program)
       expect(result.id).toBe('ch_test_1')
       expect(result.title).toBe(samplePayload.title)
-      expect(result.starterFiles).toEqual(samplePayload.starterFiles)
-      expect(result.testFiles).toEqual(samplePayload.testFiles)
+      expect(result.metadata).toEqual(samplePayload.metadata)
     })
 
     it('maps SQL failure to DomainError.internal', async () => {
@@ -86,9 +66,10 @@ describe('Postgres Challenge Actions', () => {
         title: samplePayload.title,
         description: samplePayload.description,
         language: samplePayload.language,
-        starterFiles: samplePayload.starterFiles,
-        testFiles: samplePayload.testFiles,
         timeLimitMinutes: samplePayload.timeLimitMinutes,
+        metadata: samplePayload.metadata,
+        createdAt: '2026-09-19T10:00:00.000Z',
+        updatedAt: '2026-09-19T10:00:00.000Z',
       }
 
       const sqlLayer = createMockSqlLayer(() => Effect.succeed([mockRow]))
@@ -98,6 +79,7 @@ describe('Postgres Challenge Actions', () => {
       const result = await Effect.runPromise(program)
       expect(result.id).toBe('ch_test_1')
       expect(result.title).toBe(samplePayload.title)
+      expect(result.metadata).toEqual(samplePayload.metadata)
     })
 
     it('fails with DomainError.notFound when row does not exist', async () => {
@@ -143,18 +125,20 @@ describe('Postgres Challenge Actions', () => {
           title: 'Challenge 1',
           description: 'Desc 1',
           language: 'typescript',
-          starterFiles: { 'index.ts': '' },
-          testFiles: { 'index.test.ts': '' },
           timeLimitMinutes: 30,
+          metadata: { starterFiles: { 'index.ts': '' }, testFiles: { 'index.test.ts': '' } },
+          createdAt: '2026-09-19T10:00:00.000Z',
+          updatedAt: '2026-09-19T10:00:00.000Z',
         },
         {
           id: 'ch_2',
           title: 'Challenge 2',
           description: 'Desc 2',
           language: 'python',
-          starterFiles: { 'main.py': '' },
-          testFiles: { 'test_main.py': '' },
           timeLimitMinutes: 45,
+          metadata: { starterFiles: { 'main.py': '' }, testFiles: { 'test_main.py': '' } },
+          createdAt: '2026-09-19T10:00:00.000Z',
+          updatedAt: '2026-09-19T10:00:00.000Z',
         },
       ]
 
@@ -234,6 +218,71 @@ describe('Postgres Challenge Actions', () => {
       Exit.match(exit, {
         onFailure: (failure) => {
           expect(JSON.stringify(failure)).toContain('CONFLICT')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
+    })
+  })
+
+  describe('patch', () => {
+    it('patches an existing challenge', async () => {
+      const mockUpdated = {
+        id: 'ch_test_1',
+        title: 'Patched Title',
+        description: 'Patched Desc',
+        language: 'typescript',
+        timeLimitMinutes: 60,
+        metadata: { starterFiles: {}, testFiles: {} },
+        createdAt: '2026-09-19T10:00:00.000Z',
+        updatedAt: '2026-09-19T10:30:00.000Z',
+      }
+
+      const sqlLayer = createMockSqlLayer(() => Effect.succeed([mockUpdated]))
+
+      const program = patch('ch_test_1' as ChallengeId, {
+        title: 'Patched Title',
+        timeLimitMinutes: 60,
+      }).pipe(Effect.provide(sqlLayer))
+
+      const result = await Effect.runPromise(program)
+      expect(result.id).toBe('ch_test_1')
+      expect(result.title).toBe('Patched Title')
+      expect(result.timeLimitMinutes).toBe(60)
+    })
+
+    it('fails with DomainError.notFound when challenge does not exist', async () => {
+      const sqlLayer = createMockSqlLayer(() => Effect.succeed([]))
+
+      const program = patch('ch_non_existent' as ChallengeId, {
+        title: 'New Title',
+      }).pipe(Effect.provide(sqlLayer))
+
+      const exit = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('NOT_FOUND')
+        },
+        onSuccess: () => {
+          expect.unreachable('Expected Effect to fail')
+        },
+      })
+    })
+
+    it('maps SQL failure to DomainError.internal', async () => {
+      const sqlLayer = createMockSqlLayer(() => Effect.fail(new Error('update error')))
+
+      const program = patch('ch_test_1' as ChallengeId, {
+        title: 'New Title',
+      }).pipe(Effect.provide(sqlLayer))
+
+      const exit = await Effect.runPromiseExit(program)
+      expect(Exit.isFailure(exit)).toBe(true)
+      Exit.match(exit, {
+        onFailure: (failure) => {
+          expect(JSON.stringify(failure)).toContain('INTERNAL')
         },
         onSuccess: () => {
           expect.unreachable('Expected Effect to fail')
