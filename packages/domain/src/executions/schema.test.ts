@@ -1,11 +1,6 @@
 import { Schema } from 'effect'
 import { describe, expect, it } from 'vitest'
-import {
-  ExecutionRequest,
-  ExecutionResult,
-  ExecutionStatus,
-  ExecutionStatusEnum,
-} from './schema'
+import { ExecutionRequest, ExecutionResult, ExecutionStatus, ExecutionStatusEnum } from './schema'
 
 describe('Execution Domain Schemas', () => {
   it('decodes a valid execution request', () => {
