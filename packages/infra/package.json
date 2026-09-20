@@ -21,6 +21,7 @@
     "@kuma/domain": "workspace:*",
     "@tavily/core": "^0.7.0",
     "effect": "^4.0.0-rc.115",
+    "fast-xml-parser": "^5.11.1",
     "openai": "^4.86.0",
     "pg": "^8.16.3"
   },
