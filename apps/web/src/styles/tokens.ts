@@ -1,44 +1,24 @@
 export const fonts = {
-  sans: '"Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
-  mono: '"Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace',
+  ui: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  mono: '"JetBrains Mono", "Fira Code", monospace',
+  sans: "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
 } as const
 
 export const colors = {
-  background: '#0A0A0C',
-  surface: '#111114',
-  surfaceElevated: '#17181C',
-  surfaceHover: '#1E1F24',
-  surfaceActive: '#26272D',
-
-  border: '#212227',
-  borderSubtle: '#191A1E',
-  borderStrong: '#34353C',
-
-  textPrimary: '#EDEDEF',
-  textSecondary: '#8D8E96',
-  textTertiary: '#5B5C64',
-  textInverse: '#FFFFFF',
-
-  primary: '#5E6AD2',
-  primaryHover: '#4E59BD',
-  primaryMuted: 'rgba(94, 106, 210, 0.14)',
-  primaryBorder: 'rgba(94, 106, 210, 0.32)',
-
-  teal: '#4FA7B8',
-  tealMuted: 'rgba(79, 167, 184, 0.12)',
-  tealBorder: 'rgba(79, 167, 184, 0.3)',
-
-  success: '#4CB782',
-  successMuted: 'rgba(76, 183, 130, 0.12)',
-  successBorder: 'rgba(76, 183, 130, 0.3)',
-
-  warning: '#E5A73B',
-  warningMuted: 'rgba(229, 167, 59, 0.12)',
-  warningBorder: 'rgba(229, 167, 59, 0.3)',
-
-  danger: '#E5484D',
-  dangerMuted: 'rgba(229, 72, 77, 0.12)',
-  dangerBorder: 'rgba(229, 72, 77, 0.3)',
+  background: '#18181b',
+  editor: '#121214',
+  surface: '#27272a',
+  surfaceElevated: '#3f3f46',
+  border: '#27272a',
+  borderSubtle: '#202023',
+  borderFocused: '#52525b',
+  textPrimary: '#fafafa',
+  textSecondary: '#a1a1aa',
+  textMuted: '#71717a',
+  success: '#22c55e',
+  danger: '#ef4444',
+  warning: '#f59e0b',
+  info: '#38bdf8',
 } as const
 
 export const space = {
@@ -80,3 +60,20 @@ export const lineHeights = {
   snug: '1.35',
   normal: '1.5',
 } as const
+
+export const themeTokens = {
+  colors,
+  fonts,
+  space,
+  radii,
+  fontSizes,
+  lineHeights,
+} as const
+
+export type ThemeTokens = typeof themeTokens
+export type Colors = typeof colors
+export type Fonts = typeof fonts
+export type Space = typeof space
+export type Radii = typeof radii
+export type FontSizes = typeof fontSizes
+export type LineHeights = typeof lineHeights
