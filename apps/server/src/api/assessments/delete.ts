@@ -1,19 +1,19 @@
-import { ChallengeId } from '@kuma/domain'
-import * as challenges from '@postgres/challenges'
+import { AssessmentId } from '@kuma/domain'
+import * as assessments from '@postgres/assessments'
 import { Effect, Schema } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { response } from '../respond'
 
 export const PathParams = Schema.Struct({
-  id: ChallengeId,
+  id: AssessmentId,
 })
 
 export const del = Effect.gen(function* () {
   const { id } = yield* HttpRouter.schemaPathParams(PathParams)
-  return yield* challenges.del(id)
+  return yield* assessments.del(id)
 }).pipe(
   Effect.matchEffect({
-    onFailure: (err) => response(err, { op: 'challenges.delete' }),
     onSuccess: () => response(undefined, { status: 204 }),
+    onFailure: (err) => response(err, { op: 'assessments.delete' }),
   }),
 )

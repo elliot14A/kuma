@@ -4,7 +4,7 @@ import { Effect, Schema } from 'effect'
 import { HttpServerRequest } from 'effect/unstable/http'
 import { response } from '../respond'
 
-const { id: _id, ...createFields } = Challenge.fields
+const { id: _id, createdAt: _ca, updatedAt: _ua, ...createFields } = Challenge.fields
 const CreateChallengeBody = Schema.Struct(createFields)
 
 export const create = Effect.gen(function* () {

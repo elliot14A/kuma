@@ -1,9 +1,9 @@
-import { Effect, Layer } from 'effect'
+import { Effect } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { response } from './respond'
 
 export const health = Effect.gen(function* () {
-  return yield* response({ status: 'ok' }, { message: 'service is healthy' })
+  return yield* response({ status: 'ok' }, { message: 'service is healthy', status: 200 })
 })
 
-export const healthRouter = Layer.mergeAll(HttpRouter.add('GET', '/api/v1/health', health))
+export const healthRoutes = [HttpRouter.route('GET', '/health', health)]

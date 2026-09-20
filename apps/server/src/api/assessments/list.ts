@@ -1,5 +1,5 @@
 import { makePagination } from '@kuma/domain'
-import * as challenges from '@postgres/challenges'
+import * as assessments from '@postgres/assessments'
 import { Effect, Option } from 'effect'
 import { HttpServerRequest } from 'effect/unstable/http'
 import { response } from '../respond'
@@ -12,13 +12,13 @@ export const list = Effect.gen(function* () {
   })
 
   const pagination = makePagination(queryParams)
-  return yield* challenges.list(pagination)
+  return yield* assessments.list(pagination)
 }).pipe(
   Effect.matchEffect({
-    onFailure: (err) => response(err, { op: 'challenges.list' }),
+    onFailure: (err) => response(err, { op: 'assessments.list' }),
     onSuccess: (result) =>
       response(result, {
-        message: 'challenges listed successfully',
+        message: 'assessments listed successfully',
       }),
   }),
 )
