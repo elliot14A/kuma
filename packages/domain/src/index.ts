@@ -1,3 +1,4 @@
+export * from './assessments'
 export * from './challenges'
 export * from './common'
 export * from './config'

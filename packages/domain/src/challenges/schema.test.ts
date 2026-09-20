@@ -7,67 +7,99 @@ import {
   isDomainError,
   makePagination,
   makePaginationResult,
+  PatchChallengeInput,
   toDomainError,
 } from '../index'
 
 describe('Challenge Domain Models', () => {
   it('decodes a valid TypeScript Challenge', () => {
+    const now = new Date('2026-09-19T10:00:00.000Z')
     const raw = {
       id: 'ch_ts_token_bucket',
       title: 'Debug Token Bucket Limiter',
       description: 'Fix the leaky bucket algorithm.',
       language: 'typescript',
-      starterFiles: { 'src/limiter.ts': 'export class RateLimiter {}' },
-      testFiles: { 'test/limiter.test.ts': "import { describe } from 'vitest'" },
       timeLimitMinutes: 45,
+      metadata: {
+        starterFiles: { 'src/limiter.ts': 'export class RateLimiter {}' },
+        testFiles: { 'test/limiter.test.ts': "import { describe } from 'vitest'" },
+      },
+      createdAt: now,
+      updatedAt: now,
     }
     const decoded = Schema.decodeUnknownSync(Challenge)(raw)
     expect(decoded.language).toBe('typescript')
-    expect(decoded.starterFiles['src/limiter.ts']).toBe('export class RateLimiter {}')
-    expect(decoded.testFiles['test/limiter.test.ts']).toBe("import { describe } from 'vitest'")
+    expect(decoded.metadata.starterFiles['src/limiter.ts']).toBe('export class RateLimiter {}')
+    expect(decoded.metadata.testFiles['test/limiter.test.ts']).toBe(
+      "import { describe } from 'vitest'",
+    )
     expect(decoded.timeLimitMinutes).toBe(45)
     expect(decoded.id).toBe('ch_ts_token_bucket')
+    expect(decoded.createdAt).toEqual(now)
   })
 
   it('decodes a valid Python Challenge', () => {
+    const now = new Date('2026-09-19T10:00:00.000Z')
     const raw = {
       id: 'ch_py_lru_cache',
       title: 'Implement Async Cache',
       description: 'Implement thread-safe TTL cache.',
       language: 'python',
-      starterFiles: { 'cache.py': 'class TTLCache:\n    pass' },
-      testFiles: { 'test_cache.py': 'import pytest' },
       timeLimitMinutes: 30,
+      metadata: {
+        starterFiles: { 'cache.py': 'class TTLCache:\n    pass' },
+        testFiles: { 'test_cache.py': 'import pytest' },
+      },
+      createdAt: now,
+      updatedAt: now,
     }
     const decoded = Schema.decodeUnknownSync(Challenge)(raw)
     expect(decoded.language).toBe('python')
-    expect(decoded.starterFiles['cache.py']).toBe('class TTLCache:\n    pass')
-    expect(decoded.testFiles['test_cache.py']).toBe('import pytest')
+    expect(decoded.metadata.starterFiles['cache.py']).toBe('class TTLCache:\n    pass')
+    expect(decoded.metadata.testFiles['test_cache.py']).toBe('import pytest')
     expect(decoded.timeLimitMinutes).toBe(30)
+    expect(decoded.createdAt).toEqual(now)
+  })
+
+  it('decodes partial PatchChallengeInput correctly', () => {
+    const raw = {
+      title: 'Updated Challenge Title',
+      timeLimitMinutes: 60,
+    }
+    const decoded = Schema.decodeUnknownSync(PatchChallengeInput)(raw)
+    expect(decoded.title).toBe('Updated Challenge Title')
+    expect(decoded.timeLimitMinutes).toBe(60)
+    expect(decoded.description).toBeUndefined()
+    expect(decoded.language).toBeUndefined()
+    expect(decoded.metadata).toBeUndefined()
   })
 
   it('fails decoding on invalid language', () => {
+    const now = new Date('2026-09-19T10:00:00.000Z')
     const raw = {
       id: 'ch_invalid_lang',
       title: 'Invalid Lang Challenge',
       description: 'Desc',
       language: 'rust',
-      starterFiles: {},
-      testFiles: {},
       timeLimitMinutes: 10,
+      metadata: { starterFiles: {}, testFiles: {} },
+      createdAt: now,
+      updatedAt: now,
     }
     expect(() => Schema.decodeUnknownSync(Challenge)(raw)).toThrow()
   })
 
   it('fails decoding on empty ChallengeId', () => {
+    const now = new Date('2026-09-19T10:00:00.000Z')
     const raw = {
       id: '',
       title: 'Empty ID Challenge',
       description: 'Desc',
       language: 'typescript',
-      starterFiles: {},
-      testFiles: {},
       timeLimitMinutes: 10,
+      metadata: { starterFiles: {}, testFiles: {} },
+      createdAt: now,
+      updatedAt: now,
     }
     expect(() => Schema.decodeUnknownSync(Challenge)(raw)).toThrow()
   })
