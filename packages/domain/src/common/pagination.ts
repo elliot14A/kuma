@@ -18,6 +18,14 @@ export const Pagination = Schema.Struct({
 })
 export type Pagination = typeof Pagination.Type
 
+export const PaginationQuery = Schema.Struct({
+  page: Schema.optional(Schema.NumberFromString),
+  limit: Schema.optional(Schema.NumberFromString),
+  sortOrder: Schema.optional(SortOrder),
+  search: Schema.optional(Schema.String),
+})
+export type PaginationQuery = typeof PaginationQuery.Type
+
 export interface RawPaginationInput {
   readonly page?: number | string | undefined
   readonly limit?: number | string | undefined

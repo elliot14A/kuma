@@ -12,6 +12,7 @@ describe('Postgres Challenge Actions', () => {
     language: 'typescript',
     timeLimitMinutes: 45,
     metadata: {
+      specMarkdown: '# Test Challenge\nSolve this test challenge',
       starterFiles: { 'index.ts': "console.log('starter')" },
       testFiles: { 'index.test.ts': "console.log('test')" },
     },
@@ -126,7 +127,11 @@ describe('Postgres Challenge Actions', () => {
           description: 'Desc 1',
           language: 'typescript',
           timeLimitMinutes: 30,
-          metadata: { starterFiles: { 'index.ts': '' }, testFiles: { 'index.test.ts': '' } },
+          metadata: {
+            specMarkdown: '# Challenge 1',
+            starterFiles: { 'index.ts': '' },
+            testFiles: { 'index.test.ts': '' },
+          },
           createdAt: '2026-09-19T10:00:00.000Z',
           updatedAt: '2026-09-19T10:00:00.000Z',
         },
@@ -136,7 +141,11 @@ describe('Postgres Challenge Actions', () => {
           description: 'Desc 2',
           language: 'python',
           timeLimitMinutes: 45,
-          metadata: { starterFiles: { 'main.py': '' }, testFiles: { 'test_main.py': '' } },
+          metadata: {
+            specMarkdown: '# Challenge 2',
+            starterFiles: { 'main.py': '' },
+            testFiles: { 'test_main.py': '' },
+          },
           createdAt: '2026-09-19T10:00:00.000Z',
           updatedAt: '2026-09-19T10:00:00.000Z',
         },
@@ -234,7 +243,11 @@ describe('Postgres Challenge Actions', () => {
         description: 'Patched Desc',
         language: 'typescript',
         timeLimitMinutes: 60,
-        metadata: { starterFiles: {}, testFiles: {} },
+        metadata: {
+          specMarkdown: '# Patched Challenge',
+          starterFiles: {},
+          testFiles: {},
+        },
         createdAt: '2026-09-19T10:00:00.000Z',
         updatedAt: '2026-09-19T10:30:00.000Z',
       }

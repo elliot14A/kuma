@@ -1,14 +1,17 @@
-import { Data, Predicate } from 'effect'
+import { Predicate, Schema } from 'effect'
 
-export type ErrorCode =
-  | 'NOT_FOUND'
-  | 'ALREADY_EXISTS'
-  | 'INVALID_INPUT'
-  | 'CONFLICT'
-  | 'INTERNAL'
-  | 'RATE_LIMIT_EXCEEDED'
-  | 'UNAUTHENTICATED'
-  | 'UNAUTHORIZED'
+export const ErrorCodeSchema = Schema.Literals([
+  'NOT_FOUND',
+  'ALREADY_EXISTS',
+  'INVALID_INPUT',
+  'CONFLICT',
+  'INTERNAL',
+  'RATE_LIMIT_EXCEEDED',
+  'UNAUTHENTICATED',
+  'UNAUTHORIZED',
+])
+
+export type ErrorCode = typeof ErrorCodeSchema.Type
 
 export interface DomainErrorProps {
   readonly code: ErrorCode
@@ -19,7 +22,26 @@ export interface DomainErrorProps {
   readonly cause?: unknown | undefined
 }
 
-export class DomainError extends Data.TaggedError('DomainError')<DomainErrorProps> {
+export class DomainError extends Schema.TaggedError<DomainError>()('DomainError', {
+  code: ErrorCodeSchema,
+  message: Schema.String,
+  op: Schema.optional(Schema.String),
+  entity: Schema.optional(Schema.String),
+  id: Schema.optional(Schema.String),
+}) {
+  override readonly cause?: unknown | undefined
+
+  constructor(props: DomainErrorProps) {
+    super({
+      code: props.code,
+      message: props.message,
+      op: props.op,
+      entity: props.entity,
+      id: props.id,
+    })
+    this.cause = props.cause
+  }
+
   static notFound(props: {
     readonly entity: string
     readonly id: string

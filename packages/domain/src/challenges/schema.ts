@@ -5,6 +5,7 @@ export const ChallengeId = Schema.NonEmptyString.pipe(Schema.brand('ChallengeId'
 export type ChallengeId = typeof ChallengeId.Type
 
 export const ChallengeMetadata = Schema.Struct({
+  specMarkdown: Schema.NonEmptyString,
   starterFiles: FileMap,
   testFiles: FileMap,
 })

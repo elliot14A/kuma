@@ -21,6 +21,7 @@ describe('Challenge Domain Models', () => {
       language: 'typescript',
       timeLimitMinutes: 45,
       metadata: {
+        specMarkdown: '# Debug Token Bucket Limiter\nFix the leaky bucket algorithm.',
         starterFiles: { 'src/limiter.ts': 'export class RateLimiter {}' },
         testFiles: { 'test/limiter.test.ts': "import { describe } from 'vitest'" },
       },
@@ -29,6 +30,7 @@ describe('Challenge Domain Models', () => {
     }
     const decoded = Schema.decodeUnknownSync(Challenge)(raw)
     expect(decoded.language).toBe('typescript')
+    expect(decoded.metadata.specMarkdown).toContain('Debug Token Bucket Limiter')
     expect(decoded.metadata.starterFiles['src/limiter.ts']).toBe('export class RateLimiter {}')
     expect(decoded.metadata.testFiles['test/limiter.test.ts']).toBe(
       "import { describe } from 'vitest'",
@@ -47,6 +49,7 @@ describe('Challenge Domain Models', () => {
       language: 'python',
       timeLimitMinutes: 30,
       metadata: {
+        specMarkdown: '# Implement Async Cache\nImplement thread-safe TTL cache.',
         starterFiles: { 'cache.py': 'class TTLCache:\n    pass' },
         testFiles: { 'test_cache.py': 'import pytest' },
       },
@@ -55,6 +58,7 @@ describe('Challenge Domain Models', () => {
     }
     const decoded = Schema.decodeUnknownSync(Challenge)(raw)
     expect(decoded.language).toBe('python')
+    expect(decoded.metadata.specMarkdown).toContain('Implement Async Cache')
     expect(decoded.metadata.starterFiles['cache.py']).toBe('class TTLCache:\n    pass')
     expect(decoded.metadata.testFiles['test_cache.py']).toBe('import pytest')
     expect(decoded.timeLimitMinutes).toBe(30)
@@ -89,11 +93,11 @@ describe('Challenge Domain Models', () => {
     expect(() => Schema.decodeUnknownSync(Challenge)(raw)).toThrow()
   })
 
-  it('fails decoding on empty ChallengeId', () => {
+  it('fails decoding on missing or empty specMarkdown in metadata', () => {
     const now = new Date('2026-09-19T10:00:00.000Z')
     const raw = {
-      id: '',
-      title: 'Empty ID Challenge',
+      id: 'ch_no_spec',
+      title: 'No Spec Challenge',
       description: 'Desc',
       language: 'typescript',
       timeLimitMinutes: 10,
