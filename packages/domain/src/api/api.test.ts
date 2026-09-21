@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  AssessmentsGroup,
-  ChallengesGroup,
-  ExecutionsGroup,
-  KumaApi,
-} from './index'
+import { AssessmentsGroup, ChallengesGroup, ExecutionsGroup, KumaApi } from './index'
 
 describe('@kuma/domain API Schemas', () => {
   it('defines KumaApi with correct prefix and groups', () => {

@@ -2,12 +2,7 @@ import { Schema } from 'effect'
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { PaginationQuery, PaginationResult } from '../common/pagination'
 import { DomainError } from '../error'
-import {
-  Challenge,
-  ChallengeId,
-  CreateChallengeInput,
-  PatchChallengeInput,
-} from './schema'
+import { Challenge, ChallengeId, CreateChallengeInput, PatchChallengeInput } from './schema'
 
 export const ChallengesGroup = HttpApiGroup.make('challenges')
   .add(

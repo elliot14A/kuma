@@ -103,7 +103,7 @@ export const hasNextPage = (page: number, totalPages: number): boolean => page <
 
 export const hasPrevPage = (page: number): boolean => page > 1
 
-export const PaginationResult = <T>(itemSchema: Schema.Schema<T>) =>
+export const PaginationResult = <S extends Schema.Constraint>(itemSchema: S) =>
   Schema.Struct({
     items: Schema.Array(itemSchema),
     totalItems: Schema.Number,
