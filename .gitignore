@@ -7,3 +7,5 @@ tmp/
 .DS_Store
 result
 *.log
+.superpowers/
+docs/superpowers/
