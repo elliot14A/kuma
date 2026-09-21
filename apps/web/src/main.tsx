@@ -1,7 +1,9 @@
+/** @jsxImportSource preact */
 import { render } from 'preact'
-import './app.css.ts'
+import { AppRouter } from './routes/index.ts'
+import './styles/theme.css.ts'
 
 const rootElement = document.getElementById('app')
 if (rootElement) {
-  render(<div>Kuma</div>, rootElement)
+  render(<AppRouter />, rootElement)
 }
