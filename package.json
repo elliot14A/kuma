@@ -19,15 +19,11 @@
     "lint:fix": "biome check . --write",
     "typecheck": "tsc --noEmit && bun --filter \"*\" typecheck"
   },
-  "dependencies": {
-    "@effect/platform-bun": "^4.0.0-rc.115",
-    "@effect/sql-pg": "^4.0.0-rc.115",
-    "effect": "^4.0.0-rc.115"
-  },
+
   "devDependencies": {
-    "@biomejs/biome": "^2.5.10",
-    "@types/bun": "^1.4.0",
-    "typescript": "^6.0.3",
-    "vitest": "^5.0.1"
+    "@biomejs/biome": "2.5.10",
+    "@types/bun": "1.4.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.1"
   }
 }
