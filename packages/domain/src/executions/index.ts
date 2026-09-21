@@ -1,3 +1,4 @@
+export { ExecutePayload, ExecutionsGroup } from './api'
 export {
   ExecutionId,
   ExecutionRequest,

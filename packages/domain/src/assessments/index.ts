@@ -1,3 +1,4 @@
+export { AssessmentsGroup } from './api'
 export {
   Assessment,
   AssessmentId,

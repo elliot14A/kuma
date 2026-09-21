@@ -1,3 +1,4 @@
+export { ChallengesGroup } from './api'
 export {
   Challenge,
   ChallengeId,
