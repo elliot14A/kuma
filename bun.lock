@@ -49,7 +49,6 @@
       "name": "@kuma/web",
       "version": "0.1.0",
       "dependencies": {
-        "@effect/atom-react": "4.0.0-rc.117",
         "@kuma/domain": "workspace:*",
         "@monaco-editor/react": "4.7.0",
         "@preact/preset-vite": "2.10.6",
@@ -167,8 +166,6 @@
     "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@2.5.10", "", { "os": "win32", "cpu": "arm64" }, "sha512-pxAbxduPO4xq/Cvgaa2lOrs9BB0hEXmmDqfMNP4ZOffGOkUrD1/QGw9UAMpFQpX2P8MqTIIRuQKcmetum4Oa6A=="],
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.5.10", "", { "os": "win32", "cpu": "x64" }, "sha512-M+2dgBsl3lXRiTfgPVc2p3anS4Tocojke4rzFLScZ2Y/wmF+36dRb1iHCLiyGqOzQGyTplZH1HnEYviiAqi3nA=="],
-
-    "@effect/atom-react": ["@effect/atom-react@4.0.0-rc.117", "", { "peerDependencies": { "effect": "^4.0.0-rc.117", "react": ">=19.0.0 <20.0.0", "scheduler": ">=0.25.0 <0.28.0" } }, "sha512-e6swZzC+2sPY9LfICB1YQBdn6DvnNmS1p4KwppzfHjT9lv+fyDVI9IxymUQ/Oduc58rOV/4jBhZv1tu7vgx47w=="],
 
     "@effect/platform-bun": ["@effect/platform-bun@4.0.0-rc.115", "", { "dependencies": { "@effect/platform-node-shared": "^4.0.0-rc.115" }, "peerDependencies": { "effect": "^4.0.0-rc.115" } }, "sha512-ilTFcs66ghInP8WHCJYa4bx/yzohYM9dRR//qjmVBBpSKu1hrCTiRWpEcc1N6zrnOEPk2kyVaKg5ykSMgiBMqQ=="],
 

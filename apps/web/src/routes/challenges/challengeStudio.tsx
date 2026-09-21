@@ -1,8 +1,5 @@
 /** @jsxImportSource preact */
-import type { ExecutionResult } from '@kuma/domain'
-import { Effect } from 'effect'
 import { Play, Save } from 'lucide-preact'
-import { useEffect, useState } from 'preact/hooks'
 import {
   AgentPanel,
   AppHeader,
@@ -18,8 +15,7 @@ import {
   TabHeader,
   TestDrawer,
 } from '#/components'
-import { mockExecutionResult, mockKvStoreChallenge, mockSpecMarkdown } from '#/mocks'
-import { loadStudioChallenge, saveChallengeDraft, verifyChallengeSolution } from '#/services'
+import { type RightPanelTab, useChallengeStudio } from '#/hooks'
 import {
   actionsGroupStyle,
   editorContentStyle,
@@ -30,8 +26,6 @@ import {
   studioWorkspaceStyle,
 } from './challengeStudio.css'
 
-export type RightPanelTab = 'challenge' | 'config' | 'kuma'
-
 const RIGHT_PANEL_TABS: DockRailItem<RightPanelTab>[] = [
   { id: 'challenge', label: 'Challenge' },
   { id: 'config', label: 'Config' },
@@ -39,165 +33,31 @@ const RIGHT_PANEL_TABS: DockRailItem<RightPanelTab>[] = [
 ]
 
 export const ChallengeStudio = () => {
-  const [challenge, setChallenge] = useState(mockKvStoreChallenge)
-  const [difficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
-  const [tags] = useState<string[]>(['systems', 'ttl', 'cache', 'data-structures'])
-  const [specMarkdown, setSpecMarkdown] = useState(mockSpecMarkdown)
-  const [openTabs, setOpenTabs] = useState<string[]>([
-    'spec.md',
-    'src/kv_store.ts',
-    'src/types.ts',
-    'tests/kv_store.test.ts',
-  ])
-  const [activeFile, setActiveFile] = useState<string>('src/kv_store.ts')
-  const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set())
-
-  const [testStatus, setTestStatus] = useState<'idle' | 'running' | 'passed' | 'failed'>('passed')
-  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(
-    mockExecutionResult,
-  )
-  const [isDrawerExpanded, setIsDrawerExpanded] = useState(true)
-  const [activeRightTab, setActiveRightTab] = useState<RightPanelTab>('challenge')
-
-  useEffect(() => {
-    Effect.runPromise(loadStudioChallenge()).then((loaded) => {
-      setChallenge(loaded)
-      setSpecMarkdown(loaded.metadata.specMarkdown)
-      const starters = Object.keys(loaded.metadata.starterFiles)
-      const tests = Object.keys(loaded.metadata.testFiles)
-      setOpenTabs(['spec.md', ...starters, ...tests])
-      if (starters.length > 0 && starters[0]) {
-        setActiveFile(starters[0])
-      }
-    })
-  }, [])
+  const {
+    challenge,
+    difficulty,
+    tags,
+    specMarkdown,
+    openTabs,
+    activeFile,
+    dirtyFiles,
+    testStatus,
+    executionResult,
+    isDrawerExpanded,
+    activeRightTab,
+    setIsDrawerExpanded,
+    setActiveRightTab,
+    handleSelectFile,
+    handleCloseTab,
+    handleCodeChange,
+    handleApplyAgentCode,
+    handleRunVerification,
+    handleSave,
+    getCurrentContent,
+  } = useChallengeStudio()
 
   const starterFileList = Object.keys(challenge.metadata.starterFiles)
   const testFileList = Object.keys(challenge.metadata.testFiles)
-
-  const handleSelectFile = (file: string) => {
-    if (!openTabs.includes(file)) {
-      setOpenTabs([...openTabs, file])
-    }
-    setActiveFile(file)
-  }
-
-  const handleCloseTab = (file: string) => {
-    const nextTabs = openTabs.filter((t) => t !== file)
-    setOpenTabs(nextTabs)
-    if (activeFile === file && nextTabs.length > 0) {
-      const lastTab = nextTabs[nextTabs.length - 1]
-      if (lastTab) {
-        setActiveFile(lastTab)
-      }
-    }
-  }
-
-  const handleCodeChange = (newCode: string) => {
-    if (activeFile === 'spec.md') {
-      setSpecMarkdown(newCode)
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          specMarkdown: newCode,
-        },
-      })
-    } else if (challenge.metadata.starterFiles[activeFile] !== undefined) {
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          starterFiles: { ...challenge.metadata.starterFiles, [activeFile]: newCode },
-        },
-      })
-    } else if (challenge.metadata.testFiles[activeFile] !== undefined) {
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          testFiles: { ...challenge.metadata.testFiles, [activeFile]: newCode },
-        },
-      })
-    }
-
-    setDirtyFiles(new Set([...dirtyFiles, activeFile]))
-  }
-
-  const handleApplyAgentCode = (file: string, newCode: string) => {
-    if (file === 'spec.md') {
-      setSpecMarkdown(newCode)
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          specMarkdown: newCode,
-        },
-      })
-    } else if (challenge.metadata.starterFiles[file] !== undefined) {
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          starterFiles: { ...challenge.metadata.starterFiles, [file]: newCode },
-        },
-      })
-    } else if (challenge.metadata.testFiles[file] !== undefined) {
-      setChallenge({
-        ...challenge,
-        metadata: {
-          ...challenge.metadata,
-          testFiles: { ...challenge.metadata.testFiles, [file]: newCode },
-        },
-      })
-    }
-    setDirtyFiles(new Set([...dirtyFiles, file]))
-  }
-
-  const handleRunVerification = () => {
-    setTestStatus('running')
-    setIsDrawerExpanded(true)
-
-    const program = Effect.gen(function* () {
-      const result = yield* verifyChallengeSolution(challenge.id, {
-        ...challenge.metadata.starterFiles,
-        ...challenge.metadata.testFiles,
-      })
-      return result
-    })
-
-    Effect.runPromise(program)
-      .then((result) => {
-        setTestStatus('passed')
-        setExecutionResult(result)
-      })
-      .catch(() => {
-        setTestStatus('failed')
-      })
-  }
-
-  const handleSave = () => {
-    const program = Effect.gen(function* () {
-      yield* saveChallengeDraft(challenge)
-    })
-
-    Effect.runPromise(program).then(() => {
-      setDirtyFiles(new Set())
-    })
-  }
-
-  const getCurrentContent = () => {
-    if (activeFile === 'spec.md') {
-      return specMarkdown
-    }
-    if (challenge.metadata.starterFiles[activeFile] !== undefined) {
-      return challenge.metadata.starterFiles[activeFile] ?? ''
-    }
-    if (challenge.metadata.testFiles[activeFile] !== undefined) {
-      return challenge.metadata.testFiles[activeFile] ?? ''
-    }
-    return ''
-  }
 
   return (
     <div className={studioRootStyle}>
@@ -215,7 +75,7 @@ export const ChallengeStudio = () => {
               variant="primary"
               size="md"
               icon={<Play size={12} fill="currentColor" />}
-              onClick={handleRunVerification}
+              onClick={() => handleRunVerification()}
               disabled={testStatus === 'running'}
             >
               {testStatus === 'running' ? 'Verifying...' : 'Verify Solution'}
@@ -245,7 +105,7 @@ export const ChallengeStudio = () => {
               openFiles={openTabs}
               activeFile={activeFile}
               dirtyFiles={dirtyFiles}
-              onSelectTab={setActiveFile}
+              onSelectTab={handleSelectFile}
               onCloseTab={handleCloseTab}
             />
 
