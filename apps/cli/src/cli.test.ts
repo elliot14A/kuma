@@ -1,31 +1,35 @@
+import { BunServices } from '@effect/platform-bun'
+import { AppLogger } from '@kuma/infra'
+import { Effect, Exit } from 'effect'
 import { describe, expect, it } from 'vitest'
-import { parseCliArgs } from './cli'
+import { rootCommand, runCli } from './cli'
 
-describe('Kuma CLI Parser', () => {
-  it('parses migrate command', () => {
-    const result = parseCliArgs(['migrate'])
-    expect(result.command.type).toBe('migrate')
+describe('Kuma CLI (effect/unstable/cli)', () => {
+  it('defines rootCommand with expected subcommands', () => {
+    expect(rootCommand.name).toBe('kuma')
+    const commands = rootCommand.subcommands.flatMap((g) => g.commands)
+    expect(commands.length).toBe(3)
+    const subcommandNames = commands.map((c) => c.name)
+    expect(subcommandNames).toContain('migrate')
+    expect(subcommandNames).toContain('server')
+    expect(subcommandNames).toContain('web')
   })
 
-  it('parses server command', () => {
-    const result = parseCliArgs(['server'])
-    expect(result.command.type).toBe('server')
+  it('executes web command successfully', async () => {
+    const program = runCli(['web']).pipe(
+      Effect.provide(AppLogger),
+      Effect.provide(BunServices.layer),
+    )
+    const exit = await Effect.runPromiseExit(program)
+    expect(Exit.isSuccess(exit)).toBe(true)
   })
 
-  it('parses web command', () => {
-    const result = parseCliArgs(['web'])
-    expect(result.command.type).toBe('web')
-  })
-
-  it('parses help and version flags', () => {
-    expect(parseCliArgs(['--help']).command.type).toBe('help')
-    expect(parseCliArgs(['-h']).command.type).toBe('help')
-    expect(parseCliArgs(['--version']).command.type).toBe('version')
-    expect(parseCliArgs(['-v']).command.type).toBe('version')
-  })
-
-  it('defaults to help for unknown arguments', () => {
-    const result = parseCliArgs(['unknown_cmd'])
-    expect(result.command.type).toBe('help')
+  it('fails with help for unknown subcommands', async () => {
+    const program = runCli(['unknown-command']).pipe(
+      Effect.provide(AppLogger),
+      Effect.provide(BunServices.layer),
+    )
+    const exit = await Effect.runPromiseExit(program)
+    expect(Exit.isFailure(exit)).toBe(true)
   })
 })

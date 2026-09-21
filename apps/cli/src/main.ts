@@ -1,18 +1,13 @@
+import { BunRuntime, BunServices } from '@effect/platform-bun'
 import { AppLogger } from '@kuma/infra'
-import { Effect } from 'effect'
-import { parseCliArgs } from './cli'
-import { executeCommand } from './commands'
+import { Effect, Layer } from 'effect'
+import { Command } from 'effect/unstable/cli'
+import { rootCommand, version } from './cli'
 
-const { command } = parseCliArgs(process.argv.slice(2))
+const MainLayer = Layer.merge(BunServices.layer, AppLogger)
 
-const program = executeCommand(command).pipe(
-  Effect.provide(AppLogger),
-  Effect.catch((err) =>
-    Effect.gen(function* () {
-      yield* Effect.logError(`[kuma-cli] command execution failed: ${err}`)
-      process.exit(1)
-    }),
-  ),
-)
+const program = Command.run(rootCommand, {
+  version,
+}).pipe(Effect.provide(MainLayer))
 
-Effect.runPromise(program)
+BunRuntime.runMain(program)
