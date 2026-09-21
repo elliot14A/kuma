@@ -1,2 +1,5 @@
+export { AssessmentsHandlers } from './assessments'
+export { ChallengesHandlers } from './challenges'
+export { ExecutionsHandlers } from './executions'
 export { type ErrorResponse, type Response, type ResponseOptions, response } from './respond'
-export { apiRouter } from './routes'
+export { ApiLayer } from './routes'

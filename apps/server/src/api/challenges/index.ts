@@ -1,6 +1,1 @@
-export { create } from './create'
-export { del } from './delete'
-export { fetch } from './fetch'
-export { list } from './list'
-export { patch } from './patch'
-export { challengesRoutes } from './routes'
+export { ChallengesHandlers } from './routes'

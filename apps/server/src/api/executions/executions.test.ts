@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import type { AssessmentId, ChallengeId } from '@kuma/domain'
+import { AssessmentId, type ChallengeId, ExecutePayload } from '@kuma/domain'
 import { Schema } from 'effect'
-import { ExecuteBodySchema, PathParams } from './execute'
 
 describe('Execution API Endpoint', () => {
   it('decodes execute request body schema properly', () => {
@@ -11,15 +10,15 @@ describe('Execution API Endpoint', () => {
       timeoutSeconds: 15,
     }
 
-    const decoded = Schema.decodeUnknownSync(ExecuteBodySchema)(validBody)
+    const decoded = Schema.decodeUnknownSync(ExecutePayload)(validBody)
     expect(decoded.challengeId).toBe('ch_1' as ChallengeId)
     expect(decoded.candidateFiles?.['index.ts']).toBe('export const solve = () => 42')
     expect(decoded.timeoutSeconds).toBe(15)
   })
 
-  it('validates PathParams schema', () => {
-    const validParams = { id: 'as_123' }
-    const decoded = Schema.decodeUnknownSync(PathParams)(validParams)
-    expect(decoded.id).toBe('as_123' as AssessmentId)
+  it('validates AssessmentId schema', () => {
+    const validId = 'as_123'
+    const decoded = Schema.decodeUnknownSync(AssessmentId)(validId)
+    expect(decoded).toBe('as_123' as AssessmentId)
   })
 })

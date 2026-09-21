@@ -42,7 +42,6 @@ export const ChallengesGroup = HttpApiGroup.make('challenges')
   .add(
     HttpApiEndpoint.delete('del', '/challenges/:id', {
       params: Schema.Struct({ id: ChallengeId }),
-      success: Challenge,
       error: [DomainError],
     }),
   )

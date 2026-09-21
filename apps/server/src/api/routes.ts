@@ -1,12 +1,12 @@
-import { HttpRouter } from 'effect/unstable/http'
-import { assessmentsRoutes } from './assessments'
-import { challengesRoutes } from './challenges'
-import { executionsRoutes } from './executions'
-import { healthRoutes } from './health'
+import { KumaApi } from '@kuma/domain'
+import { Layer } from 'effect'
+import { HttpApiBuilder } from 'effect/unstable/httpapi'
+import { AssessmentsHandlers } from './assessments'
+import { ChallengesHandlers } from './challenges'
+import { ExecutionsHandlers } from './executions'
 
-export const apiRouter = HttpRouter.addAll(
-  [...assessmentsRoutes, ...challengesRoutes, ...executionsRoutes, ...healthRoutes],
-  {
-    prefix: '/api/v1',
-  },
+export const ApiLayer = HttpApiBuilder.layer(KumaApi).pipe(
+  Layer.provide(ChallengesHandlers),
+  Layer.provide(AssessmentsHandlers),
+  Layer.provide(ExecutionsHandlers),
 )

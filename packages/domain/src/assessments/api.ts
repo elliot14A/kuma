@@ -42,7 +42,6 @@ export const AssessmentsGroup = HttpApiGroup.make('assessments')
   .add(
     HttpApiEndpoint.delete('del', '/assessments/:id', {
       params: Schema.Struct({ id: AssessmentId }),
-      success: Assessment,
       error: [DomainError],
     }),
   )

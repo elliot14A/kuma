@@ -1,14 +1,12 @@
-import { HttpRouter } from 'effect/unstable/http'
-import { create } from './create'
-import { del } from './delete'
-import { fetch } from './fetch'
-import { list } from './list'
-import { patch } from './patch'
+import { KumaApi, makePagination } from '@kuma/domain'
+import * as assessments from '@postgres/assessments'
+import { HttpApiBuilder } from 'effect/unstable/httpapi'
 
-export const assessmentsRoutes = [
-  HttpRouter.route('POST', '/assessments', create),
-  HttpRouter.route('GET', '/assessments/:id', fetch),
-  HttpRouter.route('GET', '/assessments', list),
-  HttpRouter.route('PATCH', '/assessments/:id', patch),
-  HttpRouter.route('DELETE', '/assessments/:id', del),
-]
+export const AssessmentsHandlers = HttpApiBuilder.group(KumaApi, 'assessments', (handlers) =>
+  handlers
+    .handle('list', ({ query }) => assessments.list(makePagination(query)))
+    .handle('fetch', ({ params }) => assessments.fetch(params.id))
+    .handle('create', ({ payload }) => assessments.create(payload))
+    .handle('patch', ({ params, payload }) => assessments.patch(params.id, payload))
+    .handle('del', ({ params }) => assessments.del(params.id)),
+)
