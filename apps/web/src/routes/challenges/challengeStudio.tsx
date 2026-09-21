@@ -15,7 +15,6 @@ import {
   TabHeader,
   TestDrawer,
 } from '#/components'
-import { type RightPanelTab, useChallengeStudio } from '#/hooks'
 import {
   actionsGroupStyle,
   editorContentStyle,
@@ -25,6 +24,7 @@ import {
   studioRootStyle,
   studioWorkspaceStyle,
 } from './challengeStudio.css'
+import { type RightPanelTab, useChallengeStudio } from './hooks'
 
 const RIGHT_PANEL_TABS: DockRailItem<RightPanelTab>[] = [
   { id: 'challenge', label: 'Challenge' },
