@@ -1,7 +1,7 @@
 import { BunHttpServer, BunServices } from '@effect/platform-bun'
 import { ServerConfig } from '@kuma/domain'
 import { AppLogger, Pg, Sandbox } from '@kuma/infra'
-import { Effect, Layer } from 'effect'
+import { Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { ApiLayer } from './api'
 import { WebLayer } from './web'
@@ -20,9 +20,5 @@ export const App = HttpRouter.serve(Router).pipe(
   Layer.provide(BunServices.layer),
 )
 
-export const serve: Effect.Effect<never, any, never> = Layer.launch(App) as Effect.Effect<
-  never,
-  any,
-  never
->
+export const serve = Layer.launch(App)
 export const runServer = serve

@@ -1,8 +1,4 @@
-import {
-  DomainError,
-  type FileMap,
-  KumaApi,
-} from '@kuma/domain'
+import { DomainError, type FileMap, KumaApi } from '@kuma/domain'
 import { SandboxRunner } from '@kuma/infra'
 import * as assessments from '@postgres/assessments'
 import * as challenges from '@postgres/challenges'

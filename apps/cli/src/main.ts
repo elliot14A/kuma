@@ -10,4 +10,4 @@ const program = Command.run(rootCommand, {
   version,
 }).pipe(Effect.provide(MainLayer))
 
-BunRuntime.runMain(program)
+BunRuntime.runMain(program as Effect.Effect<void, never, never>)
